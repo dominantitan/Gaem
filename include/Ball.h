@@ -12,13 +12,14 @@ class Ball
 {
 private:
 	sf::CircleShape circle;
+	
 
 private:
-	void initShape();
+	void initShape(const sf::RenderTarget* target);
 
 
 public:
-	Ball();
+	Ball(const sf::RenderTarget* target);
 	~Ball();
 
 	//functions

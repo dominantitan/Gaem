@@ -4,6 +4,9 @@ void Game::initVariables()
 {
 
 	this->endGame = false;
+	this->spawnTimerMax = 10.f; // Time in seconds to spawn a new ball
+	this->spawnTimer = this->spawnTimerMax;
+	this->maxBalls = 10; // Maximum number of balls allowed in the game
 }
 
 void Game::initWindow()
@@ -23,6 +26,7 @@ Game::~Game()
 {
 	delete this->window;
 }
+
 
 bool Game::running() const
 {
@@ -44,11 +48,28 @@ void Game::pollEvents()
 	}
 }
 
+void Game::spawnBall()
+{
+	if (this->spawnTimer < this->spawnTimerMax)
+	{
+		this->spawnTimer += 1.f;
+	}
+	else
+	{
+		if (this->balls.size() < this->maxBalls)
+		{
+			this->balls.push_back(Ball(this->window)); // Add a new ball to the vector
+			this->spawnTimer = 0.f; // Reset the spawn timer
+		}
+	}
+}
+
 void Game::update(float deltaTime)
 {
 
 	this->pollEvents();
 
+	this->spawnBall(); // Check if we can spawn a new ball
 
 	this->player.update(this->window,deltaTime); // Update player logic
 
@@ -60,6 +81,11 @@ void Game::render()
 
 	// Render game objects here
 	this->player.render(this->window); // Assuming player is a member variable of type Player
+
+	for (auto& i : this->balls)
+	{
+		i.render(this->window); // Render each ball in the vector
+	}
 
 	this->window->display();
 
