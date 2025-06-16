@@ -3,7 +3,8 @@
 void Player::initVariables()
 {
 	this->speed = 250.f; // Set the speed of the player
-
+	this->healthMax = 10; // Set the maximum health of the player
+	this->health = this->healthMax; // Initialize health to maximum
 }
 
 void Player::initShape()
@@ -25,6 +26,11 @@ Player::~Player()
 {
 
 
+}
+
+const sf::RectangleShape& Player::getShape() const
+{
+	return {this->rectangle};
 }
 
 void Player::updateInput(float deltaTime)

@@ -23,6 +23,7 @@ public:
 	~Ball();
 
 	//functions
+	const sf::CircleShape& getShape() const;
 	void update();
 	void render(sf::RenderTarget* target);
 };

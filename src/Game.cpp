@@ -64,6 +64,18 @@ void Game::spawnBall()
 	}
 }
 
+void Game::updateCollision()
+{
+	for (size_t i = 0;i < this->balls.size();i++)
+	{
+		if (this->player.getShape().getGlobalBounds().intersects(this->balls[i].getShape().getGlobalBounds()))
+		{
+			this->balls.erase(this->balls.begin() + i); // Remove the ball if it collides with the player
+		}
+	}
+
+}
+
 void Game::update(float deltaTime)
 {
 
@@ -72,6 +84,8 @@ void Game::update(float deltaTime)
 	this->spawnBall(); // Check if we can spawn a new ball
 
 	this->player.update(this->window,deltaTime); // Update player logic
+
+	updateCollision(); // Check for collisions with balls
 
 }
 

@@ -38,6 +38,7 @@ public:
 	void pollEvents();
 
 	void spawnBall();
+	void updateCollision();
 	void update(float deltaTime);
 	void render();
 };

@@ -21,6 +21,11 @@ Ball::~Ball() {
 
 }
 
+const sf::CircleShape& Ball::getShape() const
+{
+	return {this->circle};
+}
+
 void Ball::update()
 {
 
