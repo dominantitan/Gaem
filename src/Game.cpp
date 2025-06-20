@@ -1,5 +1,21 @@
 #include "Game.h"
 
+void Game::initFont()
+{
+	if (!this->font.loadFromFile(RESOURCES_PATH"MedodicaRegular.otf"))
+	{
+		std::cerr << "ERROR::GAME::INITFONT::Could not load font!" << std::endl;
+	}
+}
+
+void Game::initText()
+{
+	this->guiText.setFont(this->font);
+	this->guiText.setFillColor(sf::Color::White);
+	this->guiText.setCharacterSize(32);
+	this->guiText.setString("Points: 0");
+}
+
 void Game::initVariables()
 {
 
@@ -7,6 +23,7 @@ void Game::initVariables()
 	this->spawnTimerMax = 10.f; // Time in seconds to spawn a new ball
 	this->spawnTimer = this->spawnTimerMax;
 	this->maxBalls = 10; // Maximum number of balls allowed in the game
+	this->point = 0;
 }
 
 void Game::initWindow()
@@ -20,6 +37,8 @@ Game::Game()
 {
 	this->initVariables();
 	this->initWindow();
+	this->initFont();
+	this->initText();
 }
 
 Game::~Game()
@@ -76,6 +95,13 @@ void Game::updateCollision()
 
 }
 
+void Game::updateGui()
+{
+	std::stringstream ss;
+	ss << "Points: " << this->point; // Update the GUI text with the current points
+	this->guiText.setString(ss.str()); // Set the updated string to the GUI text
+}
+
 void Game::update(float deltaTime)
 {
 
@@ -87,6 +113,14 @@ void Game::update(float deltaTime)
 
 	updateCollision(); // Check for collisions with balls
 
+	this->updateGui(); // Update the GUI text
+
+}
+
+
+void Game::renderGui(sf::RenderTarget* target)
+{
+	target->draw(this->guiText); // Draw the GUI text
 }
 
 void Game::render()
@@ -100,6 +134,8 @@ void Game::render()
 	{
 		i.render(this->window); // Render each ball in the vector
 	}
+
+	this->renderGui(this->window); // Render the GUI text
 
 	this->window->display();
 
