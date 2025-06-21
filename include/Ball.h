@@ -7,11 +7,20 @@
 #include <SFML/Audio.hpp>
 #include <SFML/Network.hpp>
 
+enum ballType {
+	DEFAULT = 0,
+	DAMAGING = 1,
+	HEALING = 2,
+	SPEED = 3,
+	NOOFTYPES = 4
+};;
+
 
 class Ball
 {
 private:
 	sf::CircleShape circle;
+	int type;
 	
 
 private:
@@ -19,11 +28,14 @@ private:
 
 
 public:
-	Ball(const sf::RenderTarget* target);
+	Ball(const sf::RenderTarget* target,int type);
 	~Ball();
 
-	//functions
+	//getters
 	const sf::CircleShape& getShape() const;
+	const int& getType() const;
+
+	//functions
 	void update();
 	void render(sf::RenderTarget* target);
 };

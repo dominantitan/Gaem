@@ -77,7 +77,7 @@ void Game::spawnBall()
 	{
 		if (this->balls.size() < this->maxBalls)
 		{
-			this->balls.push_back(Ball(this->window)); // Add a new ball to the vector
+			this->balls.push_back(Ball(this->window,rand()%ballType::NOOFTYPES)); // Add a new ball to the vector
 			this->spawnTimer = 0.f; // Reset the spawn timer
 		}
 	}
@@ -89,6 +89,23 @@ void Game::updateCollision()
 	{
 		if (this->player.getShape().getGlobalBounds().intersects(this->balls[i].getShape().getGlobalBounds()))
 		{
+			switch (this->balls[i].getType())
+			{
+			case ballType::DEFAULT:
+				// Default ball, no special effect
+				this->point += 10;// Increment points when the player collides with a ball
+				break;
+			case ballType::DAMAGING:
+				this->player.takeDamage(1); // Player takes damage
+				break;
+			case ballType::HEALING:
+				this->player.gainHealth(1); // Player gains health
+				break;
+			case ballType::SPEED:
+				this->player.gainSpeed(50.f); // Player gains speed
+				break;
+			}
+			
 			this->balls.erase(this->balls.begin() + i); // Remove the ball if it collides with the player
 		}
 	}
@@ -98,7 +115,9 @@ void Game::updateCollision()
 void Game::updateGui()
 {
 	std::stringstream ss;
-	ss << "Points: " << this->point; // Update the GUI text with the current points
+	ss << "Points: " << this->point << '\n'
+		<< "Health: " << this->player.getHealth() << " / "<< this->player.getHealthMax() << '\n'
+		<< "Speed: " << this->player.getSpeed(); // Update the GUI text with the current points
 	this->guiText.setString(ss.str()); // Set the updated string to the GUI text
 }
 

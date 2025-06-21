@@ -33,6 +33,47 @@ const sf::RectangleShape& Player::getShape() const
 	return {this->rectangle};
 }
 
+const int& Player::getHealth() const
+{
+	return {this->health};
+}
+
+const int& Player::getHealthMax() const
+{
+	return { this->healthMax};
+}
+
+const float& Player::getSpeed() const
+{
+	return {this->speed};
+}
+
+void Player::takeDamage(const int damage)
+{
+	if (this->health > 0)
+		this->health -= damage; // Reduce health by damage amount
+
+	if (this->health < 0) // Ensure health does not go below zero
+		this->health = 0;
+}
+
+void Player::gainHealth(const int health)
+{
+	if (this->health < this->healthMax)
+	{
+		this->health += health; // Increase health by the specified amount
+		if (this->health > this->healthMax) // Ensure health does not exceed maximum
+			this->health = this->healthMax;
+	}
+}
+
+void Player::gainSpeed(const float speed)
+{
+	this->speed += speed; // Increase player speed by the specified amount
+	if (this->speed < 0.f) // Ensure speed does not go below zero
+		this->speed = 0.f;
+}
+
 void Player::updateInput(float deltaTime)
 {
 	// Window Bound collision
