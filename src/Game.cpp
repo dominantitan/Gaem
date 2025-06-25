@@ -10,10 +10,21 @@ void Game::initFont()
 
 void Game::initText()
 {
+	//GUI Text
 	this->guiText.setFont(this->font);
 	this->guiText.setFillColor(sf::Color::White);
 	this->guiText.setCharacterSize(32);
 	this->guiText.setString("Points: 0");
+
+	// End Game Text
+	this->endGameText.setFont(this->font);
+	this->endGameText.setFillColor(sf::Color::Red);
+	this->endGameText.setCharacterSize(64);
+	this->endGameText.setString("Game Over!\nPress Escape to Exit");
+	this->endGameText.setPosition(
+		this->videoMode.width / 2.f - this->endGameText.getGlobalBounds().width / 2.f,
+		this->videoMode.height / 2.f - this->endGameText.getGlobalBounds().height / 2.f
+	);
 }
 
 void Game::initVariables()
@@ -46,6 +57,11 @@ Game::~Game()
 	delete this->window;
 }
 
+const bool& Game::getEndGame() const
+{
+	return {this->endGame};
+}
+
 
 bool Game::running() const
 {
@@ -67,6 +83,41 @@ void Game::pollEvents()
 	}
 }
 
+const int Game::randBallType() const
+{
+	int type = ballType::DEFAULT;
+	int randValue = rand() % 100 + 1;
+	if (randValue <= 60) // 60% chance for DEFAULT
+	{
+		type = ballType::DEFAULT;
+	}
+	else if (randValue <= 75) // 15% chance for DAMAGING
+	{
+		type = ballType::DAMAGING;
+	}
+	else if (randValue <= 85) // 10% chance for HEALING
+	{
+		type = ballType::HEALING;
+	}
+	else // 15% chance for SPEED
+	{
+		type = ballType::SPEED;
+	}
+	return type;
+}
+
+void Game::updatePlayer(float deltaTime)
+{
+	this->player.update(this->window,deltaTime);
+
+	if (this->player.getHealth() <= 0)
+	{
+		this->endGame = true; // End the game if player health is zero or below
+		std::cout << "Game Over! Final Points: " << this->point << std::endl; // Print final points
+		return;
+	}
+}
+
 void Game::spawnBall()
 {
 	if (this->spawnTimer < this->spawnTimerMax)
@@ -77,7 +128,7 @@ void Game::spawnBall()
 	{
 		if (this->balls.size() < this->maxBalls)
 		{
-			this->balls.push_back(Ball(this->window,rand()%ballType::NOOFTYPES)); // Add a new ball to the vector
+			this->balls.push_back(Ball(this->window,this->randBallType())); // Add a new ball to the vector
 			this->spawnTimer = 0.f; // Reset the spawn timer
 		}
 	}
@@ -96,7 +147,7 @@ void Game::updateCollision()
 				this->point += 10;// Increment points when the player collides with a ball
 				break;
 			case ballType::DAMAGING:
-				this->player.takeDamage(1); // Player takes damage
+				this->player.takeDamage(10); // Player takes damage
 				break;
 			case ballType::HEALING:
 				this->player.gainHealth(1); // Player gains health
@@ -116,8 +167,8 @@ void Game::updateGui()
 {
 	std::stringstream ss;
 	ss << "Points: " << this->point << '\n'
-		<< "Health: " << this->player.getHealth() << " / "<< this->player.getHealthMax() << '\n'
-		<< "Speed: " << this->player.getSpeed(); // Update the GUI text with the current points
+			<< "Health: " << this->player.getHealth() << " / "<< this->player.getHealthMax() << '\n'
+				<< "Speed: " << this->player.getSpeed(); // Update the GUI text with the current points
 	this->guiText.setString(ss.str()); // Set the updated string to the GUI text
 }
 
@@ -126,14 +177,19 @@ void Game::update(float deltaTime)
 
 	this->pollEvents();
 
-	this->spawnBall(); // Check if we can spawn a new ball
+	if (this->endGame == false)
+	{
+		this->spawnBall(); // Check if we can spawn a new ball
 
-	this->player.update(this->window,deltaTime); // Update player logic
+		this->updatePlayer(deltaTime); // Update player state
 
-	updateCollision(); // Check for collisions with balls
+		updateCollision(); // Check for collisions with balls
 
-	this->updateGui(); // Update the GUI text
+		this->updateGui(); // Update the GUI text
 
+	}
+
+	
 }
 
 
@@ -155,6 +211,11 @@ void Game::render()
 	}
 
 	this->renderGui(this->window); // Render the GUI text
+
+	if (this->endGame == true)
+	{
+		this->window->draw(this->endGameText); // Draw end game text if the game is over
+	}
 
 	this->window->display();
 

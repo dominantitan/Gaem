@@ -28,6 +28,7 @@ private:
 
 	sf::Font font;
 	sf::Text guiText;
+	sf::Text endGameText;
 
 private:
 	void initFont();
@@ -41,6 +42,7 @@ public:
 	~Game();
 
 	//Accessors
+	const bool& getEndGame() const;
 
 	//Modifier
 
@@ -48,6 +50,8 @@ public:
 	bool running() const;
 	void pollEvents();
 
+	const int randBallType() const;
+	void updatePlayer(float deltaTime);
 	void spawnBall();
 	void updateCollision();
 
