@@ -1,9 +1,29 @@
 #include "Game.h"
 
+void Game::initFont()
+{
+	if (!this->font.loadFromFile(RESOURCES_PATH"MedodicaRegular.otf"))
+	{
+		std::cerr << "ERROR::GAME::INITFONT::Could not load font!" << std::endl;
+	}
+}
+
+void Game::initText()
+{
+	this->guiText.setFont(this->font);
+	this->guiText.setFillColor(sf::Color::White);
+	this->guiText.setCharacterSize(32);
+	this->guiText.setString("Points: 0");
+}
+
 void Game::initVariables()
 {
 
 	this->endGame = false;
+	this->spawnTimerMax = 10.f; // Time in seconds to spawn a new ball
+	this->spawnTimer = this->spawnTimerMax;
+	this->maxBalls = 10; // Maximum number of balls allowed in the game
+	this->point = 0;
 }
 
 void Game::initWindow()
@@ -17,12 +37,15 @@ Game::Game()
 {
 	this->initVariables();
 	this->initWindow();
+	this->initFont();
+	this->initText();
 }
 
 Game::~Game()
 {
 	delete this->window;
 }
+
 
 bool Game::running() const
 {
@@ -44,14 +67,79 @@ void Game::pollEvents()
 	}
 }
 
+void Game::spawnBall()
+{
+	if (this->spawnTimer < this->spawnTimerMax)
+	{
+		this->spawnTimer += 1.f;
+	}
+	else
+	{
+		if (this->balls.size() < this->maxBalls)
+		{
+			this->balls.push_back(Ball(this->window,rand()%ballType::NOOFTYPES)); // Add a new ball to the vector
+			this->spawnTimer = 0.f; // Reset the spawn timer
+		}
+	}
+}
+
+void Game::updateCollision()
+{
+	for (size_t i = 0;i < this->balls.size();i++)
+	{
+		if (this->player.getShape().getGlobalBounds().intersects(this->balls[i].getShape().getGlobalBounds()))
+		{
+			switch (this->balls[i].getType())
+			{
+			case ballType::DEFAULT:
+				// Default ball, no special effect
+				this->point += 10;// Increment points when the player collides with a ball
+				break;
+			case ballType::DAMAGING:
+				this->player.takeDamage(1); // Player takes damage
+				break;
+			case ballType::HEALING:
+				this->player.gainHealth(1); // Player gains health
+				break;
+			case ballType::SPEED:
+				this->player.gainSpeed(50.f); // Player gains speed
+				break;
+			}
+			
+			this->balls.erase(this->balls.begin() + i); // Remove the ball if it collides with the player
+		}
+	}
+
+}
+
+void Game::updateGui()
+{
+	std::stringstream ss;
+	ss << "Points: " << this->point << '\n'
+		<< "Health: " << this->player.getHealth() << " / "<< this->player.getHealthMax() << '\n'
+		<< "Speed: " << this->player.getSpeed(); // Update the GUI text with the current points
+	this->guiText.setString(ss.str()); // Set the updated string to the GUI text
+}
+
 void Game::update(float deltaTime)
 {
 
 	this->pollEvents();
 
+	this->spawnBall(); // Check if we can spawn a new ball
 
 	this->player.update(this->window,deltaTime); // Update player logic
 
+	updateCollision(); // Check for collisions with balls
+
+	this->updateGui(); // Update the GUI text
+
+}
+
+
+void Game::renderGui(sf::RenderTarget* target)
+{
+	target->draw(this->guiText); // Draw the GUI text
 }
 
 void Game::render()
@@ -60,6 +148,13 @@ void Game::render()
 
 	// Render game objects here
 	this->player.render(this->window); // Assuming player is a member variable of type Player
+
+	for (auto& i : this->balls)
+	{
+		i.render(this->window); // Render each ball in the vector
+	}
+
+	this->renderGui(this->window); // Render the GUI text
 
 	this->window->display();
 
